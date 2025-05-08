@@ -1,0 +1,39 @@
+package org.example.pokerbakend.models;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
+
+import java.util.List;
+
+@Getter
+@Setter
+@ToString
+public class Player extends User {
+    @JsonIgnore
+    private List<Card> hand;
+
+    @JsonIgnore
+    private String token;
+
+    private Integer balance;
+    private Integer bet;
+
+    public Player(Integer id, String name, String token, Integer balance) {
+        super(id, name);
+        this.token = token;
+        this.balance = balance;
+        this.bet = 0;
+    }
+
+    public void fold(){
+    }
+
+    public void check(){
+    }
+
+    public void raise(){
+    }
+
+    public void call(){
+    }
+}

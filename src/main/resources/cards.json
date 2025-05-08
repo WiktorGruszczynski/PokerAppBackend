@@ -1,0 +1,314 @@
+[
+  {
+    "id": 1,
+    "index": 2,
+    "name": "clubs_2",
+    "color": "clubs"
+  },
+  {
+    "id": 2,
+    "index": 3,
+    "name": "clubs_3",
+    "color": "clubs"
+  },
+  {
+    "id": 3,
+    "index": 4,
+    "name": "clubs_4",
+    "color": "clubs"
+  },
+  {
+    "id": 4,
+    "index": 5,
+    "name": "clubs_5",
+    "color": "clubs"
+  },
+  {
+    "id": 5,
+    "index": 6,
+    "name": "clubs_6",
+    "color": "clubs"
+  },
+  {
+    "id": 6,
+    "index": 7,
+    "name": "clubs_7",
+    "color": "clubs"
+  },
+  {
+    "id": 7,
+    "index": 8,
+    "name": "clubs_8",
+    "color": "clubs"
+  },
+  {
+    "id": 8,
+    "index": 9,
+    "name": "clubs_9",
+    "color": "clubs"
+  },
+  {
+    "id": 9,
+    "index": 10,
+    "name": "clubs_10",
+    "color": "clubs"
+  },
+  {
+    "id": 10,
+    "index": 11,
+    "name": "clubs_J",
+    "color": "clubs"
+  },
+  {
+    "id": 11,
+    "index": 12,
+    "name": "clubs_Q",
+    "color": "clubs"
+  },
+  {
+    "id": 12,
+    "index": 13,
+    "name": "clubs_K",
+    "color": "clubs"
+  },
+  {
+    "id": 13,
+    "index": 14,
+    "name": "clubs_A",
+    "color": "clubs"
+  },
+  {
+    "id": 14,
+    "index": 2,
+    "name": "diamonds_2",
+    "color": "diamonds"
+  },
+  {
+    "id": 15,
+    "index": 3,
+    "name": "diamonds_3",
+    "color": "diamonds"
+  },
+  {
+    "id": 16,
+    "index": 4,
+    "name": "diamonds_4",
+    "color": "diamonds"
+  },
+  {
+    "id": 17,
+    "index": 5,
+    "name": "diamonds_5",
+    "color": "diamonds"
+  },
+  {
+    "id": 18,
+    "index": 6,
+    "name": "diamonds_6",
+    "color": "diamonds"
+  },
+  {
+    "id": 19,
+    "index": 7,
+    "name": "diamonds_7",
+    "color": "diamonds"
+  },
+  {
+    "id": 20,
+    "index": 8,
+    "name": "diamonds_8",
+    "color": "diamonds"
+  },
+  {
+    "id": 21,
+    "index": 9,
+    "name": "diamonds_9",
+    "color": "diamonds"
+  },
+  {
+    "id": 22,
+    "index": 10,
+    "name": "diamonds_10",
+    "color": "diamonds"
+  },
+  {
+    "id": 23,
+    "index": 11,
+    "name": "diamonds_J",
+    "color": "diamonds"
+  },
+  {
+    "id": 24,
+    "index": 12,
+    "name": "diamonds_Q",
+    "color": "diamonds"
+  },
+  {
+    "id": 25,
+    "index": 13,
+    "name": "diamonds_K",
+    "color": "diamonds"
+  },
+  {
+    "id": 26,
+    "index": 14,
+    "name": "diamonds_A",
+    "color": "diamonds"
+  },
+  {
+    "id": 27,
+    "index": 2,
+    "name": "hearts_2",
+    "color": "hearts"
+  },
+  {
+    "id": 28,
+    "index": 3,
+    "name": "hearts_3",
+    "color": "hearts"
+  },
+  {
+    "id": 29,
+    "index": 4,
+    "name": "hearts_4",
+    "color": "hearts"
+  },
+  {
+    "id": 30,
+    "index": 5,
+    "name": "hearts_5",
+    "color": "hearts"
+  },
+  {
+    "id": 31,
+    "index": 6,
+    "name": "hearts_6",
+    "color": "hearts"
+  },
+  {
+    "id": 32,
+    "index": 7,
+    "name": "hearts_7",
+    "color": "hearts"
+  },
+  {
+    "id": 33,
+    "index": 8,
+    "name": "hearts_8",
+    "color": "hearts"
+  },
+  {
+    "id": 34,
+    "index": 9,
+    "name": "hearts_9",
+    "color": "hearts"
+  },
+  {
+    "id": 35,
+    "index": 10,
+    "name": "hearts_10",
+    "color": "hearts"
+  },
+  {
+    "id": 36,
+    "index": 11,
+    "name": "hearts_J",
+    "color": "hearts"
+  },
+  {
+    "id": 37,
+    "index": 12,
+    "name": "hearts_Q",
+    "color": "hearts"
+  },
+  {
+    "id": 38,
+    "index": 13,
+    "name": "hearts_K",
+    "color": "hearts"
+  },
+  {
+    "id": 39,
+    "index": 14,
+    "name": "hearts_A",
+    "color": "hearts"
+  },
+  {
+    "id": 40,
+    "index": 2,
+    "name": "spades_2",
+    "color": "spades"
+  },
+  {
+    "id": 41,
+    "index": 3,
+    "name": "spades_3",
+    "color": "spades"
+  },
+  {
+    "id": 42,
+    "index": 4,
+    "name": "spades_4",
+    "color": "spades"
+  },
+  {
+    "id": 43,
+    "index": 5,
+    "name": "spades_5",
+    "color": "spades"
+  },
+  {
+    "id": 44,
+    "index": 6,
+    "name": "spades_6",
+    "color": "spades"
+  },
+  {
+    "id": 45,
+    "index": 7,
+    "name": "spades_7",
+    "color": "spades"
+  },
+  {
+    "id": 46,
+    "index": 8,
+    "name": "spades_8",
+    "color": "spades"
+  },
+  {
+    "id": 47,
+    "index": 9,
+    "name": "spades_9",
+    "color": "spades"
+  },
+  {
+    "id": 48,
+    "index": 10,
+    "name": "spades_10",
+    "color": "spades"
+  },
+  {
+    "id": 49,
+    "index": 11,
+    "name": "spades_J",
+    "color": "spades"
+  },
+  {
+    "id": 50,
+    "index": 12,
+    "name": "spades_Q",
+    "color": "spades"
+  },
+  {
+    "id": 51,
+    "index": 13,
+    "name": "spades_K",
+    "color": "spades"
+  },
+  {
+    "id": 52,
+    "index": 14,
+    "name": "spades_A",
+    "color": "spades"
+  }
+]
