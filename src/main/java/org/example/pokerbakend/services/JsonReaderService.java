@@ -2,7 +2,7 @@ package org.example.pokerbakend.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.pokerbakend.models.Card;
+import org.example.pokerbakend.services.models.Card;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;

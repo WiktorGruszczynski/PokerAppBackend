@@ -1,4 +1,4 @@
-package org.example.pokerbakend.models.messages;
+package org.example.pokerbakend.services.models.messages;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

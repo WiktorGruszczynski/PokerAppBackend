@@ -1,4 +1,4 @@
-package org.example.pokerbakend.models;
+package org.example.pokerbakend.services.models;
 
 
 import java.util.ArrayList;
@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class Dealer {
     private final List<Card> backupCards;
-    private final List<Card> gameCards;
+    private List<Card> gameCards;
     private final Random rand = new Random();
 
     public Dealer(List<Card> cards) {
@@ -25,6 +25,10 @@ public class Dealer {
         }
 
         return cards;
+    }
+
+    public void resetDeck(){
+        gameCards = backupCards;
     }
 
 

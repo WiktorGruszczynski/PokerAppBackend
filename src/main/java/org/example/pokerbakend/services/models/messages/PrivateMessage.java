@@ -1,4 +1,4 @@
-package org.example.pokerbakend.models.messages.join;
+package org.example.pokerbakend.services.models.messages;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class JoinMessage {
-    String username;
+public class PrivateMessage {
+    private String message;
 }

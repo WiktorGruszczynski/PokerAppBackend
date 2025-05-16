@@ -9,9 +9,11 @@ public class SecurityService {
     private final Random rand = new Random();
     private final int TOKEN_LENGTH = 32;
     private final String characters = "0123456789abcdef";
+    private int last_id = 0;
 
     public int generateId(){
-        return rand.nextInt(1_000_000,9_999_999);
+        last_id++;
+        return last_id;
     }
 
     public String generateToken(){

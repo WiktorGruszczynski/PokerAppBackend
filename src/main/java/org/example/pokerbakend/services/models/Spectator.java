@@ -1,4 +1,4 @@
-package org.example.pokerbakend.models;
+package org.example.pokerbakend.services.models;
 
 import lombok.Getter;
 import lombok.Setter;

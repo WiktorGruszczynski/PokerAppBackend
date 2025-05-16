@@ -2,19 +2,18 @@ package org.example.pokerbakend.controllers;
 
 
 
-import org.example.pokerbakend.models.Card;
-import org.example.pokerbakend.models.Player;
-import org.example.pokerbakend.models.messages.BroadcastMessage;
-import org.example.pokerbakend.models.messages.SuccessMessage;
-import org.example.pokerbakend.models.messages.TokenMessage;
-import org.example.pokerbakend.models.messages.join.JoinMessage;
-import org.example.pokerbakend.models.messages.PrivateMessage;
-import org.example.pokerbakend.models.messages.join.JoinResponse;
-import org.example.pokerbakend.models.messages.spectate.SpectateMessage;
-import org.example.pokerbakend.models.messages.spectate.SpectateResponse;
+import org.example.pokerbakend.services.models.Card;
+import org.example.pokerbakend.services.models.Player;
+import org.example.pokerbakend.services.models.messages.ActionMessage;
+import org.example.pokerbakend.services.models.messages.BroadcastMessage;
+import org.example.pokerbakend.services.models.messages.PrivateMessage;
+import org.example.pokerbakend.services.models.messages.TokenMessage;
+import org.example.pokerbakend.services.models.messages.join.JoinMessage;
+import org.example.pokerbakend.services.models.messages.join.JoinResponse;
 import org.example.pokerbakend.services.GameService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
@@ -22,11 +21,13 @@ import java.util.List;
 
 
 @Controller
-public class GameController {
+public class ApiController {
     private final GameService gameService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public GameController(GameService gameService) {
+    public ApiController(GameService gameService, SimpMessagingTemplate messagingTemplate) {
         this.gameService = gameService;
+        this.messagingTemplate = messagingTemplate;
     }
 
 //    User input
@@ -53,18 +54,12 @@ public class GameController {
     }
 
 
-    @MessageMapping("/spectate")
-    @SendToUser("/queue/spectate/response")
-    public SpectateResponse spectateGame(SpectateMessage spectateMessage){
-        return gameService.spectateGame(spectateMessage.getUsername());
-    }
-
-
     @MessageMapping("/getAll")
     @SendToUser("/queue/getAll/response")
     public List<Player> getAll(){
         return gameService.getAllPlayers();
     }
+
 
     @MessageMapping("/getHand")
     @SendToUser("/queue/getHand/response")
@@ -75,13 +70,16 @@ public class GameController {
 
     @MessageMapping("/leave")
     public void leaveGame(Player player){
-        System.out.println(player);
         gameService.leaveGame(player);
     }
 
     @MessageMapping("/start")
-    @SendTo("/topic/checkYourHand")
-    public SuccessMessage startGame(Player player){
-        return gameService.startGame(player);
+    public void startGame(Player player){
+        gameService.startGame(player);
+    }
+
+    @MessageMapping("/action")
+    public void playerAction(ActionMessage message){
+        gameService.action(message);
     }
 }

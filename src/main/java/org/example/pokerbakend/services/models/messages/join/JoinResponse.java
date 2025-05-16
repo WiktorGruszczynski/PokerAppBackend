@@ -1,10 +1,10 @@
-package org.example.pokerbakend.models.messages.join;
+package org.example.pokerbakend.services.models.messages.join;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.pokerbakend.models.Player;
+import org.example.pokerbakend.services.models.Player;
 
 
 @Getter

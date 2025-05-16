@@ -1,4 +1,4 @@
-package org.example.pokerbakend.models.messages;
+package org.example.pokerbakend.services.models.messages.join;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SuccessMessage {
-    private boolean success;
+public class JoinMessage {
+    String username;
 }

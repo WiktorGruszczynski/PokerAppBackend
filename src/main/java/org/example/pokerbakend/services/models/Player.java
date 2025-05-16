@@ -1,4 +1,4 @@
-package org.example.pokerbakend.models;
+package org.example.pokerbakend.services.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
@@ -17,6 +17,7 @@ public class Player extends User {
 
     private Integer balance;
     private Integer bet;
+    private String status = "active";
 
     public Player(Integer id, String name, String token, Integer balance) {
         super(id, name);
@@ -26,14 +27,18 @@ public class Player extends User {
     }
 
     public void fold(){
+        this.status = "fold";
     }
 
     public void check(){
+        this.status = "active";
     }
 
-    public void raise(){
+    public void raise(int amount){
+        this.bet = amount;
     }
 
-    public void call(){
+    public void call(int amount){
+        raise(amount);
     }
 }
