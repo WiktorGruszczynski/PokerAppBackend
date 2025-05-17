@@ -30,6 +30,4 @@ public class Dealer {
     public void resetDeck(){
         gameCards = backupCards;
     }
-
-
 }

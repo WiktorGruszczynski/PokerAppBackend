@@ -10,10 +10,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ActionMessage {
-    private String token;
+public class ActionMessage extends TokenMessage {
     private String action;
-
 //    Wykorzystywany jesli gracz podbija stawke
     private Integer amount;
 }

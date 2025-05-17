@@ -30,12 +30,11 @@ public class Player extends User {
         this.status = "fold";
     }
 
-    public void check(){
-        this.status = "active";
-    }
 
     public void raise(int amount){
-        this.bet = amount;
+        balance+=bet;
+        bet=amount;
+        balance-=bet;
     }
 
     public void call(int amount){

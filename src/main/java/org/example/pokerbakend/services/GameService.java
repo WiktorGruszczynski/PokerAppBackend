@@ -1,11 +1,10 @@
 package org.example.pokerbakend.services;
 
-
-
 import org.example.pokerbakend.services.models.Card;
 import org.example.pokerbakend.services.models.Dealer;
 import org.example.pokerbakend.services.models.Player;
 import org.example.pokerbakend.services.models.messages.ActionMessage;
+import org.example.pokerbakend.services.models.messages.UpdateMessage;
 import org.example.pokerbakend.services.models.messages.join.JoinResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -16,11 +15,16 @@ import java.util.List;
 //To jest model z MVC
 @Service
 public class GameService {
-    private final SimpMessagingTemplate messagingTemplate;
     private final SecurityService securityService;
+    private final SimpMessagingTemplate messagingTemplate;
+
+    private final int STARTING_BALANCE = 10_000;
     private final List<Player> players = new ArrayList<>();
+
     private final Dealer dealer;
+
     private final int MAX_PLAYERS = 5;
+
 
     private boolean running = false;
     private boolean awaitingMove = false;
@@ -37,10 +41,6 @@ public class GameService {
         );
     }
 
-    public List<Player> getAllPlayers() {
-        return players;
-    }
-
     public JoinResponse joinGame(String username) {
         if (players.size() < MAX_PLAYERS && !running) {
             String token = securityService.generateToken();
@@ -50,10 +50,9 @@ public class GameService {
                     id,
                     username,
                     token,
-                    10_000
+                    STARTING_BALANCE
             );
             players.add(player);
-
 
             return new JoinResponse(
                     true,
@@ -65,20 +64,8 @@ public class GameService {
         else{
             return new JoinResponse(
                     false,
-                    "Couldn't connect",
-                    null,
-                    null
+                    "Couldn't connect"
             );
-        }
-    }
-
-    public void leaveGame(Player player) {
-        for (int i=0; i<players.size(); ++i) {
-            if (players.get(i).getId().equals(player.getId())) {
-                players.remove(i);
-                System.out.println("Player " + player.getId() + " left the game");
-                break;
-            }
         }
     }
 
@@ -109,22 +96,7 @@ public class GameService {
         }
     }
 
-    private void dealCardsToPlayers(){
-        for (Player player : players) {
-            player.setHand(dealer.dealCards(2));
-        }
-    }
-
-    private void dealCardsToTable(){
-        if (tableCards.isEmpty()) {
-            tableCards.addAll(dealer.dealCards(3));
-        }
-        else if (tableCards.size() == 3 || tableCards.size() == 4) {
-            tableCards.addAll(dealer.dealCards(1));
-        }
-    }
-
-    private void awaitPlayersMove(){
+    private void awaitPlayerMove(){
         awaitingMove = true;
 
         while (awaitingMove) {
@@ -138,33 +110,29 @@ public class GameService {
     }
 
 
-//    @SendTo("/topic/checkYourHand")
-    private void round(){
-        for (Player player : players) {
-            currentPlayer = player;
-//            SendToAll czyj jest teraz ruch
-
-            messagingTemplate.convertAndSend("/topic/move", player.getId());
-            awaitPlayersMove();
-        }
-    }
-
     public void action(ActionMessage message) {
         if (currentPlayer.getToken().equals(message.getToken())) {
             String action = message.getAction();
             switch (action) {
                 case "fold": {
                     currentPlayer.fold();
+                    break;
                 }
                 case "raise": {
                     currentPlayer.raise(message.getAmount());
                     currentBet = message.getAmount();
+                    break;
                 }
                 case "check": {
-                    currentPlayer.check();
+                    if (currentPlayer.getBet() < currentBet) {
+                        System.out.println("CANNOT CHECK");
+                        return;
+                    }
+                    break;
                 }
                 case "call": {
                     currentPlayer.call(currentBet);
+                    break;
                 }
             }
 
@@ -172,19 +140,114 @@ public class GameService {
         }
     }
 
+    private void dealCardsToPlayers(){
+        for (Player player : players) {
+            player.setHand(dealer.dealCards(2));
+        }
+    }
+
+    private void dealCardsToTable(){
+        if (countActivePlayers()==1){
+            return;
+        }
+
+        if (tableCards.isEmpty()) {
+            tableCards.addAll(dealer.dealCards(3));
+        }
+        else if (tableCards.size() == 3 || tableCards.size() == 4) {
+            tableCards.addAll(dealer.dealCards(1));
+        }
+    }
+
+    private void updateGame(){
+        messagingTemplate.convertAndSend(
+                "/topic/update",
+                new UpdateMessage(
+                        currentPlayer.getId(),
+                        tableCards,
+                        players
+                )
+        );
+    }
+
+    private boolean isRoundFinished(){
+        for (Player player : players) {
+            if (player.getStatus().equals("fold")) continue;
+
+            if (player.getBet()<currentBet) {
+                if (player.getBalance() > 0){
+//                    Go around the table
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private int countActivePlayers(){
+        int counter = 0;
+        for (Player player : players) {
+            if (player.getStatus().equals("active")) counter++;
+        }
+
+        return counter;
+    }
+
+    private void round(){
+        do {
+            for (Player player : players) {
+                if (player.getStatus().equals("fold")) {
+                    continue;
+                }
+
+                if (countActivePlayers()==1){
+                    return;
+                }
+
+                currentPlayer = player;
+
+                updateGame();
+                awaitPlayerMove();
+            }
+
+            updateGame();
+        } while (!isRoundFinished());
+    }
+
+
     private void mainLoop(){
         while (running) {
-//            Rozdanie kart
+//            Rozdanie kart graczom
             dealCardsToPlayers();
-            messagingTemplate.convertAndSend("/topic/checkYourHand","");
-
-//            Wylozenie kart na stol
-            dealCardsToTable();
-            messagingTemplate.convertAndSend("/topic/tableCards", tableCards);
 
 //            Pierwsza runda
+            dealCardsToTable();
             round();
 
+//            Druga runda
+            dealCardsToTable();
+            round();
+
+//            Trzecia runda
+            dealCardsToTable();
+            round();
+
+            currentPlayer = null;
+
+            System.out.println("Koniec gry");
+
+//            1. Wygranie walkoverem
+            if (countActivePlayers()==1){
+                for (Player player : players) {
+                    if (player.getStatus().equals("active")){
+                        System.out.println(player);
+                        System.out.println("Wygrana walkoverem");
+                        break;
+                    }
+                }
+            }
+
+            running = false;
         }
     }
 
