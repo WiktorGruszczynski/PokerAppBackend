@@ -2,6 +2,7 @@ package org.example.pokerbakend.services.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.example.pokerbakend.services.exceptions.IllegalMoveException;
 
 import java.util.List;
 
@@ -32,12 +33,33 @@ public class Player extends User {
 
 
     public void raise(int amount){
+        if (status.equals("fold")){
+            throw new IllegalMoveException("You can't raise your bet after you already folded");
+        }
+
         balance+=bet;
         bet=amount;
-        balance-=bet;
+
+//        if not enough funds -> wejdz All In
+        if (balance<amount){
+            bet = balance;
+            balance = balance-amount;
+        }
+        else {
+            balance-=bet;
+        }
+    }
+
+    public void check(int tableBet){
+        if (bet<tableBet){
+            throw new IllegalMoveException("Player cannot check, while his bet is smaller than table bet");
+        }
+
+        this.status = "checked";
     }
 
     public void call(int amount){
         raise(amount);
+        check(amount);
     }
 }

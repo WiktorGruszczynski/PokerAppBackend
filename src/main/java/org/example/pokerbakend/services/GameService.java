@@ -33,6 +33,7 @@ public class GameService {
     private Integer currentBet = 0;
     private List<Card> tableCards = new ArrayList<>();
 
+
     public GameService(SimpMessagingTemplate messagingTemplate, JsonReaderService jsonReaderService, SecurityService securityService) {
         this.messagingTemplate = messagingTemplate;
         this.securityService = securityService;
@@ -107,27 +108,25 @@ public class GameService {
                 throw new RuntimeException(e);
             }
         }
+
     }
 
 
     public void action(ActionMessage message) {
         if (currentPlayer.getToken().equals(message.getToken())) {
-            String action = message.getAction();
-            switch (action) {
+            switch (message.getAction()) {
                 case "fold": {
                     currentPlayer.fold();
                     break;
                 }
                 case "raise": {
-                    currentPlayer.raise(message.getAmount());
-                    currentBet = message.getAmount();
+                    int amount = message.getAmount();
+                    currentPlayer.raise(amount);
+                    currentBet = amount;
                     break;
                 }
                 case "check": {
-                    if (currentPlayer.getBet() < currentBet) {
-                        System.out.println("CANNOT CHECK");
-                        return;
-                    }
+                    currentPlayer.check(currentBet);
                     break;
                 }
                 case "call": {
@@ -172,22 +171,27 @@ public class GameService {
 
     private boolean isRoundFinished(){
         for (Player player : players) {
-            if (player.getStatus().equals("fold")) continue;
+            String playerStatus = player.getStatus();
 
-            if (player.getBet()<currentBet) {
-                if (player.getBalance() > 0){
-//                    Go around the table
-                    return false;
-                }
-            }
+            if (playerStatus.equals("fold")) continue;
+            if (!playerStatus.equals("checked")) return false;
         }
         return true;
+    }
+
+    private void reloadPlayersStatus(){
+        for (Player player : players) {
+            if (player.getStatus().equals("checked")){
+                player.setStatus("active");
+            }
+        }
     }
 
     private int countActivePlayers(){
         int counter = 0;
         for (Player player : players) {
-            if (player.getStatus().equals("active")) counter++;
+            String status = player.getStatus();
+            if (status.equals("active") || status.equals("checked")) counter++;
         }
 
         return counter;
@@ -212,8 +216,23 @@ public class GameService {
 
             updateGame();
         } while (!isRoundFinished());
+
+        reloadPlayersStatus();
     }
 
+    public Player getWinner() {
+        //            1. Wygranie walkoverem
+        if (countActivePlayers()==1){
+            for (Player player : players) {
+                if (player.getStatus().equals("active")){
+                    System.out.println(player);
+                    System.out.println("Wygrana walkoverem");
+                    break;
+                }
+            }
+        }
+        return null;
+    }
 
     private void mainLoop(){
         while (running) {
@@ -234,18 +253,7 @@ public class GameService {
 
             currentPlayer = null;
 
-            System.out.println("Koniec gry");
-
-//            1. Wygranie walkoverem
-            if (countActivePlayers()==1){
-                for (Player player : players) {
-                    if (player.getStatus().equals("active")){
-                        System.out.println(player);
-                        System.out.println("Wygrana walkoverem");
-                        break;
-                    }
-                }
-            }
+            getWinner();
 
             running = false;
         }
