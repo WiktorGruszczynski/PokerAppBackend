@@ -46,4 +46,9 @@ public class ApiController {
     public void playerAction(ActionMessage message){
         gameService.action(message);
     }
+
+    @MessageMapping("/ready")
+    public void setPlayerReady(TokenMessage tokenMessage){
+        gameService.setPlayerReady(tokenMessage);
+    }
 }

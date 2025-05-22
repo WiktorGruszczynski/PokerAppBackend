@@ -1,6 +1,7 @@
 package org.example.pokerbakend.services.models;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 public class HandEvaluation {
     private String handTitle;
     private List<Card> cards;
+    private List<Card> playersCards;
     private Card highCard;
 
     public HandEvaluation(String handTitle, List<Card> cards){
@@ -19,6 +21,7 @@ public class HandEvaluation {
         this.cards = cards;
     }
 
+    @JsonIgnore
     public int getPoints(){
         int sum = 0;
         for (Card card: cards){

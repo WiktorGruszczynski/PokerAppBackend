@@ -3,6 +3,7 @@ package org.example.pokerbakend.services;
 import org.example.pokerbakend.services.models.Card;
 import org.example.pokerbakend.services.models.Player;
 import org.example.pokerbakend.services.models.messages.ActionMessage;
+import org.example.pokerbakend.services.models.messages.TokenMessage;
 import org.example.pokerbakend.services.models.messages.UpdateMessage;
 import org.example.pokerbakend.services.models.messages.join.JoinResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -99,12 +100,14 @@ public class GameService {
         }
     }
 
+
+
     private void awaitPlayerMove(){
         awaitingMove = true;
 
         while (awaitingMove) {
             try {
-                Thread.sleep(10);
+                Thread.sleep(30);
             }
             catch (InterruptedException e){
                 throw new RuntimeException(e);
@@ -160,15 +163,20 @@ public class GameService {
         }
     }
 
-    private void updateGame(){
+    private void updateGame(String message){
         messagingTemplate.convertAndSend(
                 "/topic/update",
                 new UpdateMessage(
-                        currentPlayer.getId(),
+                        currentPlayer,
                         tableCards,
-                        players
+                        players,
+                        message
                 )
         );
+    }
+
+    public void updateGame(){
+        updateGame("update");
     }
 
     private boolean isRoundFinished(){
@@ -222,25 +230,88 @@ public class GameService {
         reloadPlayersStatus();
     }
 
-    public Player getWinner() {
-        //            1. Wygranie walkoverem
+    public List<Player> getWinner() {
         if (countActivePlayers()==1){
             for (Player player : players) {
                 if (player.getStatus().equals("active") || player.getStatus().equals("checked")){
-                    System.out.println("Wygrana walkoverem "+player.getName());
-                    break;
+                    return List.of(player);
+                }
+            }
+            return null;
+        }
+        else{
+            for (Player player: players){
+                player.setHandEvaluation(pokerHandService.evaluateHand(player.getHand(), tableCards));
+            }
+
+            return pokerHandService.comparePlayersHands(players);
+        }
+    }
+
+    private int calculatePrize(){
+        int prize = 0;
+
+        for (Player player : players) {
+            prize+=player.getBet();
+            player.setBet(0);
+        }
+
+        return prize;
+    }
+
+    private void finishGame(){
+        currentPlayer = new Player(0,"","",0);
+        List<Player> winners = getWinner();
+        int prize = calculatePrize();
+
+        for (Player winner : winners) {
+            for (Player player : players) {
+                if (player.getId().equals(winner.getId())) {
+                    player.addBalance(prize/winners.size());
+                    player.setStatus("winner");
+                }
+                else{
+                    player.setStatus("waiting");
                 }
             }
         }
-        else{
-            for (Player player : players) {
-                if (player.getStatus().equals("fold")) continue;
 
-                pokerHandService.evaluateHand(player.getHand(), tableCards);
+        updateGame("finish");
+    }
+
+    private boolean isEveryPlayerReady(){
+        for (Player player : players) {
+            if (player.getStatus().equals("winner") || player.getStatus().equals("waiting")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void awaitAllPlayersReady(){
+        while (!isEveryPlayerReady()) {
+            try {
+                Thread.sleep(30);
+            }
+            catch (InterruptedException e){
+                throw new RuntimeException(e);
             }
         }
 
-        return null;
+        setupNextGame();
+    }
+
+    private void setupNextGame() {
+        dealer.resetDeck();
+        for (Player player : players) {
+            player.setStatus("active");
+            player.setHandEvaluation(null);
+        }
+
+        tableCards.clear();
+        currentPlayer = players.getFirst();
+        tableBet=0;
+        updateGame();
     }
 
     private void mainLoop(){
@@ -260,16 +331,16 @@ public class GameService {
             dealCardsToTable();
             round();
 
-            currentPlayer = null;
-
-            getWinner();
-
-            running = false;
+            finishGame();
+            awaitAllPlayersReady();
         }
     }
 
-
-
-
-
+    public void setPlayerReady(TokenMessage tokenMessage) {
+        for (Player player: players){
+            if (player.getToken().equals(tokenMessage.getToken())){
+                player.setStatus("ready");
+            }
+        }
+    }
 }

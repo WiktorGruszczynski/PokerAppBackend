@@ -13,6 +13,8 @@ public class Player extends User {
     @JsonIgnore
     private List<Card> hand;
 
+    private HandEvaluation handEvaluation;
+
     @JsonIgnore
     private String token;
 
@@ -28,6 +30,11 @@ public class Player extends User {
         this.bet = 0;
     }
 
+    public void addBalance(int amount){
+        this.balance += amount;
+    }
+
+
     public void fold(){
         this.status = "fold";
     }
@@ -41,27 +48,25 @@ public class Player extends User {
     public void raise(int amount, int tableBet){
         checkStatus();
 
-        if (amount<tableBet){
+        if (balance-amount < 0){
+//            jezeli bet większy niz balance to wchodzi caly balance
+
+            bet = balance;
+            balance = 0;
+        }
+        else    if (amount<tableBet){
             throw new IllegalMoveException("Bet is too small!");
         }
-
-        balance+=bet;
-        bet=amount;
-
-//        if not enough funds -> wejdz All In
-        if (balance<amount){
-            bet = balance;
-            balance = balance-amount;
-        }
         else {
-            balance-=bet;
+            balance-=amount;
+            bet=amount;
         }
     }
 
     public void check(int tableBet){
         checkStatus();
 
-        if (bet<tableBet){
+        if (bet<tableBet && balance-tableBet >= 0){
             throw new IllegalMoveException("Player cannot check, while his bet is smaller than table bet");
         }
         if (tableBet==0){

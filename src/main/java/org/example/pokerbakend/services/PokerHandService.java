@@ -2,22 +2,13 @@ package org.example.pokerbakend.services;
 
 import org.example.pokerbakend.services.models.Card;
 import org.example.pokerbakend.services.models.HandEvaluation;
+import org.example.pokerbakend.services.models.Player;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-//             Poker hands
-//            "High card"
-//            "Pair"
-//            "Two pair"
-//            "Three of a kind"
-//            "Four of a kind"
-//            "Full house"
-//            "Straight"
-//            "Flush"
-//            "Straight flush"
 
 @Service
 public class PokerHandService {
@@ -26,6 +17,18 @@ public class PokerHandService {
             "diamonds",
             "hearts",
             "spades"
+    );
+
+    private final List<String> possibleHands = List.of(
+            "High card",
+            "Pair",
+            "Two pair",
+            "Three of a kind",
+            "Straight",
+            "Flush",
+            "Full house",
+            "Four of a kind",
+            "Straight flush"
     );
 
     private List<Card> sort(List<Card> cards){
@@ -94,14 +97,6 @@ public class PokerHandService {
         return indexesCounter;
     }
 
-    public HandEvaluation evaluateHand(List<Card> playerCards, List<Card> tableCards){
-        List<Card> cards = sort(combineLists(playerCards, tableCards));
-        HandEvaluation bestHand = getBestHand(cards);
-        setHandHighCard(bestHand, playerCards);
-
-        return bestHand;
-    }
-
     private HandEvaluation getBestHand(List<Card> cards){
         HandEvaluation hand;
 
@@ -126,12 +121,19 @@ public class PokerHandService {
         hand = checkPairs(cards);
         if (hand!=null) return hand;
 
-        return new HandEvaluation(null, new ArrayList<>());
+        return new HandEvaluation(possibleHands.getFirst(), new ArrayList<>());
     }
 
     private void setHandHighCard(HandEvaluation hand, List<Card> playerCards){
         if (hand.getHandTitle()!=null) playerCards = subtractList(playerCards, hand.getCards());
-        Card highCard = playerCards.get(0);
+
+//        null card, if both of players cards are used for a poker hand
+        if (playerCards.isEmpty()){
+            hand.setHighCard(new Card(0, -1, null, null));
+            return;
+        }
+
+        Card highCard = playerCards.getFirst();
 
         for (Card card: playerCards){
             if (card.getIndex()>highCard.getIndex()) highCard=card;
@@ -305,5 +307,60 @@ public class PokerHandService {
             }
         }
         return null;
+    }
+
+    public HandEvaluation evaluateHand(List<Card> playerCards, List<Card> tableCards){
+        List<Card> cards = sort(combineLists(playerCards, tableCards));
+        HandEvaluation bestHand = getBestHand(cards);
+        setHandHighCard(bestHand, playerCards);
+
+        bestHand.setPlayersCards(playerCards);
+
+        return bestHand;
+    }
+
+    public List<Player> comparePlayersHands(List<Player> players){
+        List<Player> bestPlayers = new ArrayList<>();
+
+        for (Player player: players){
+            HandEvaluation hand = player.getHandEvaluation();
+            
+            if (!bestPlayers.isEmpty()){
+                HandEvaluation bestHand = bestPlayers.getFirst().getHandEvaluation();
+
+                int handRank = possibleHands.indexOf(hand.getHandTitle());
+                int bestHandRank = possibleHands.indexOf(bestHand.getHandTitle());
+
+                if (handRank>bestHandRank){
+                    bestPlayers.set(0, player);
+                }
+                else if (handRank==bestHandRank){
+//                    compare best card in each hand
+                    Card handHighestCard = hand.getCards().getLast();
+                    Card bestHandHighestCard = bestHand.getCards().getLast();
+
+                    if (handHighestCard.getIndex()>bestHandHighestCard.getIndex()){
+                        bestPlayers.set(0, player);
+                    }
+//                    compare high cards
+                    else if (handHighestCard.getIndex().equals(bestHandHighestCard.getIndex())){
+                        Card handHighCard = hand.getHighCard();
+                        Card bestHandHighCard = bestHand.getHighCard();
+
+                        if (handHighCard.getIndex()>bestHandHighCard.getIndex()){
+                            bestPlayers.set(0, player);
+                        }
+                        else if (handHighCard.getIndex().equals(bestHandHighCard.getIndex())){
+                            bestPlayers.add(player);
+                        }
+                    }
+                }
+            }
+            else{
+                bestPlayers.add(player);
+            }
+        }
+
+        return bestPlayers;
     }
 }

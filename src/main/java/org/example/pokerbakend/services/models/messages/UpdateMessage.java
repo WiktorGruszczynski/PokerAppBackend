@@ -14,7 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateMessage {
-    private int currentId;
+    private Player currentPlayer;
     private List<Card> table;
     private List<Player> players;
+    private String message;
 }
