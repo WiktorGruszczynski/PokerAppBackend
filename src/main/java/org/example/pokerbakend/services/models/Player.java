@@ -18,6 +18,7 @@ public class Player extends User {
 
     private Integer balance;
     private Integer bet;
+    private Integer points;
     private String status = "active";
 
     public Player(Integer id, String name, String token, Integer balance) {
@@ -31,10 +32,17 @@ public class Player extends User {
         this.status = "fold";
     }
 
-
-    public void raise(int amount){
+    private void checkStatus(){
         if (status.equals("fold")){
-            throw new IllegalMoveException("You can't raise your bet after you already folded");
+            throw new IllegalMoveException("Player folded!");
+        }
+    }
+
+    public void raise(int amount, int tableBet){
+        checkStatus();
+
+        if (amount<tableBet){
+            throw new IllegalMoveException("Bet is too small!");
         }
 
         balance+=bet;
@@ -51,15 +59,21 @@ public class Player extends User {
     }
 
     public void check(int tableBet){
+        checkStatus();
+
         if (bet<tableBet){
             throw new IllegalMoveException("Player cannot check, while his bet is smaller than table bet");
+        }
+        if (tableBet==0){
+            throw new IllegalMoveException("Player cannot check, if table bet is zero");
         }
 
         this.status = "checked";
     }
 
     public void call(int amount){
-        raise(amount);
+        checkStatus();
+        raise(amount, amount);
         check(amount);
     }
 }

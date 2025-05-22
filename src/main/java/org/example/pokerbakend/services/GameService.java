@@ -1,7 +1,6 @@
 package org.example.pokerbakend.services;
 
 import org.example.pokerbakend.services.models.Card;
-import org.example.pokerbakend.services.models.Dealer;
 import org.example.pokerbakend.services.models.Player;
 import org.example.pokerbakend.services.models.messages.ActionMessage;
 import org.example.pokerbakend.services.models.messages.UpdateMessage;
@@ -17,6 +16,7 @@ import java.util.List;
 public class GameService {
     private final SecurityService securityService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final PokerHandService pokerHandService;
 
     private final int STARTING_BALANCE = 10_000;
     private final List<Player> players = new ArrayList<>();
@@ -30,16 +30,17 @@ public class GameService {
     private boolean awaitingMove = false;
 
     private Player currentPlayer;
-    private Integer currentBet = 0;
+    private Integer tableBet = 0;
     private List<Card> tableCards = new ArrayList<>();
 
 
-    public GameService(SimpMessagingTemplate messagingTemplate, JsonReaderService jsonReaderService, SecurityService securityService) {
+    public GameService(SimpMessagingTemplate messagingTemplate, JsonReaderService jsonReaderService, SecurityService securityService, PokerHandService pokerHandService) {
         this.messagingTemplate = messagingTemplate;
         this.securityService = securityService;
         this.dealer = new Dealer(
             jsonReaderService.loadCards()
         );
+        this.pokerHandService = pokerHandService;
     }
 
     public JoinResponse joinGame(String username) {
@@ -54,6 +55,7 @@ public class GameService {
                     STARTING_BALANCE
             );
             players.add(player);
+
 
             return new JoinResponse(
                     true,
@@ -121,16 +123,16 @@ public class GameService {
                 }
                 case "raise": {
                     int amount = message.getAmount();
-                    currentPlayer.raise(amount);
-                    currentBet = amount;
+                    currentPlayer.raise(amount, tableBet);
+                    tableBet = amount;
                     break;
                 }
                 case "check": {
-                    currentPlayer.check(currentBet);
+                    currentPlayer.check(tableBet);
                     break;
                 }
                 case "call": {
-                    currentPlayer.call(currentBet);
+                    currentPlayer.call(tableBet);
                     break;
                 }
             }
@@ -224,13 +226,20 @@ public class GameService {
         //            1. Wygranie walkoverem
         if (countActivePlayers()==1){
             for (Player player : players) {
-                if (player.getStatus().equals("active")){
-                    System.out.println(player);
-                    System.out.println("Wygrana walkoverem");
+                if (player.getStatus().equals("active") || player.getStatus().equals("checked")){
+                    System.out.println("Wygrana walkoverem "+player.getName());
                     break;
                 }
             }
         }
+        else{
+            for (Player player : players) {
+                if (player.getStatus().equals("fold")) continue;
+
+                pokerHandService.evaluateHand(player.getHand(), tableCards);
+            }
+        }
+
         return null;
     }
 
@@ -258,6 +267,9 @@ public class GameService {
             running = false;
         }
     }
+
+
+
 
 
 }

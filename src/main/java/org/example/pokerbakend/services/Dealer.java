@@ -1,5 +1,7 @@
-package org.example.pokerbakend.services.models;
+package org.example.pokerbakend.services;
 
+
+import org.example.pokerbakend.services.models.Card;
 
 import java.util.ArrayList;
 import java.util.List;
