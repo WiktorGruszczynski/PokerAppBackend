@@ -17,6 +17,7 @@ public class Player extends User {
 
     @JsonIgnore
     private String token;
+    protected String name;
 
     private Integer balance;
     private Integer bet;
@@ -24,7 +25,8 @@ public class Player extends User {
     private String status = "active";
 
     public Player(Integer id, String name, String token, Integer balance) {
-        super(id, name);
+        super(id);
+        this.name = name;
         this.token = token;
         this.balance = balance;
         this.bet = 0;

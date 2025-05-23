@@ -2,6 +2,7 @@ package org.example.pokerbakend.services;
 
 import org.example.pokerbakend.services.models.Card;
 import org.example.pokerbakend.services.models.Player;
+import org.example.pokerbakend.services.models.Spectator;
 import org.example.pokerbakend.services.models.messages.ActionMessage;
 import org.example.pokerbakend.services.models.messages.TokenMessage;
 import org.example.pokerbakend.services.models.messages.UpdateMessage;
@@ -14,34 +15,31 @@ import java.util.List;
 
 //To jest model z MVC
 @Service
-public class GameService {
+public class GameService{
     private final SecurityService securityService;
     private final SimpMessagingTemplate messagingTemplate;
     private final PokerHandService pokerHandService;
 
-    private final int STARTING_BALANCE = 10_000;
+    private final List<Spectator> spectators = new ArrayList<>();
     private final List<Player> players = new ArrayList<>();
-
     private final Dealer dealer;
-
     private final int MAX_PLAYERS = 5;
-
+    private Player currentPlayer;
+    private Integer tableBet = 0;
+    private final List<Card> tableCards = new ArrayList<>();
+    private String updateMessage = "update";
 
     private boolean running = false;
     private boolean awaitingMove = false;
 
-    private Player currentPlayer;
-    private Integer tableBet = 0;
-    private List<Card> tableCards = new ArrayList<>();
 
-
-    public GameService(SimpMessagingTemplate messagingTemplate, JsonReaderService jsonReaderService, SecurityService securityService, PokerHandService pokerHandService) {
+    public GameService(SimpMessagingTemplate messagingTemplate, JsonReaderService jsonReaderService, SecurityService securityService, PokerHandService pokerHandService, PokerHandService pokerHandService1) {
         this.messagingTemplate = messagingTemplate;
         this.securityService = securityService;
         this.dealer = new Dealer(
             jsonReaderService.loadCards()
         );
-        this.pokerHandService = pokerHandService;
+        this.pokerHandService = pokerHandService1;
     }
 
     public JoinResponse joinGame(String username) {
@@ -49,6 +47,7 @@ public class GameService {
             String token = securityService.generateToken();
             int id = securityService.generateId();
 
+            int STARTING_BALANCE = 10_000;
             Player player = new Player(
                     id,
                     username,
@@ -100,8 +99,6 @@ public class GameService {
         }
     }
 
-
-
     private void awaitPlayerMove(){
         awaitingMove = true;
 
@@ -116,6 +113,27 @@ public class GameService {
 
     }
 
+    private void awaitAllPlayersReady(){
+        while (!isEveryPlayerReady()) {
+            try {
+                Thread.sleep(30);
+            }
+            catch (InterruptedException e){
+                throw new RuntimeException(e);
+            }
+        }
+
+        setupNextGame();
+    }
+
+    private boolean isEveryPlayerReady(){
+        for (Player player : players) {
+            if (player.getStatus().equals("winner") || player.getStatus().equals("waiting")) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     public void action(ActionMessage message) {
         if (currentPlayer.getToken().equals(message.getToken())) {
@@ -163,20 +181,16 @@ public class GameService {
         }
     }
 
-    private void updateGame(String message){
+    private void updateGame(){
         messagingTemplate.convertAndSend(
                 "/topic/update",
                 new UpdateMessage(
                         currentPlayer,
                         tableCards,
                         players,
-                        message
+                        updateMessage
                 )
         );
-    }
-
-    public void updateGame(){
-        updateGame("update");
     }
 
     private boolean isRoundFinished(){
@@ -276,29 +290,8 @@ public class GameService {
             }
         }
 
-        updateGame("finish");
-    }
-
-    private boolean isEveryPlayerReady(){
-        for (Player player : players) {
-            if (player.getStatus().equals("winner") || player.getStatus().equals("waiting")) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void awaitAllPlayersReady(){
-        while (!isEveryPlayerReady()) {
-            try {
-                Thread.sleep(30);
-            }
-            catch (InterruptedException e){
-                throw new RuntimeException(e);
-            }
-        }
-
-        setupNextGame();
+        updateMessage = "finish";
+        updateGame();
     }
 
     private void setupNextGame() {
@@ -311,6 +304,7 @@ public class GameService {
         tableCards.clear();
         currentPlayer = players.getFirst();
         tableBet=0;
+        updateMessage = "update";
         updateGame();
     }
 
@@ -342,5 +336,21 @@ public class GameService {
                 player.setStatus("ready");
             }
         }
+    }
+
+    public boolean isGameRunning() {
+        return running;
+    }
+
+    public Spectator addSpectator() {
+        Spectator spectator = new Spectator(securityService.generateId());
+
+        spectators.add(spectator);
+
+        return spectator;
+    }
+
+    public void fetchUpdate() {
+        updateGame();
     }
 }

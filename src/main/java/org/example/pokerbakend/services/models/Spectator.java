@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Spectator extends User {
-    public Spectator(Integer id, String name) {
-        super(id, name);
+    public Spectator(Integer id) {
+        super(id);
     }
 }

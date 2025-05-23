@@ -11,5 +11,4 @@ import lombok.*;
 @ToString
 public class User {
     protected Integer id;
-    protected String name;
 }
